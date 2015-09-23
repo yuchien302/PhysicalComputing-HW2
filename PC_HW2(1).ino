@@ -28,7 +28,7 @@
 // set pin numbers:
 const int buttonPin = 2;     // the number of the pushbutton pin
 const int ledPin =  13;      // the number of the LED pin
-int morse[5];
+int morse[5] = {0,0,0,0,0};
 int location = 0;
 int highCount = 0;
 int number = 0;
@@ -52,7 +52,7 @@ void loop() {
   // if it is, the buttonState is HIGH:
   if (location == 5) {
     Serial.println(number);
-    location++
+    location++;
   }
   else if (location < 5) {
       if (buttonState == HIGH) {
@@ -75,8 +75,8 @@ void loop() {
 
   void morseToNumber() {
     int total = 0;
-    for (i = 0; i < 5; ++i) {
-      total += morse[i]
+    for (int i = 0; i < 5; ++i) {
+      total += morse[i];
     }
 
     if (morse[0] == 0) {
