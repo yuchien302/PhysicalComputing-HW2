@@ -137,42 +137,49 @@ int digits[10][7][5] = {{{0,0,0,0,0},
 int digit = 0;
 
 void loop() {
-  // read the state of the pushbutton value:
-  buttonState = digitalRead(buttonPin);
-  
-  
-  
+
+  // high frequency loop for displaying LED grid
   if(digitalRead(cpPin) == LOW) {
     
-    // prepare for clock to trigger
+    // just before triggering clock (cpPin from LOW to HIGH)
     if(row_idx == 0){
       digitalWrite(dataPin, HIGH);
     } else {
       digitalWrite(dataPin, LOW);
     }
 
-    delay(1); // to make sure shift rigesture get it's value
-    
+    delay(2); // just to make sure shift rigesture get it's value
+
+    // parallels write from arduino to LED column
     digitalWrite(c0Pin, digits[digit][row_idx][0]);
     digitalWrite(c1Pin, digits[digit][row_idx][1]);
     digitalWrite(c2Pin, digits[digit][row_idx][2]);
     digitalWrite(c3Pin, digits[digit][row_idx][3]);
     digitalWrite(c4Pin, digits[digit][row_idx][4]);
-    
+
+    // and clock will trigger shift register to parallels write to LED rows
     digitalWrite(cpPin, HIGH);
 
+    // next row index
     row_idx = (row_idx+1) % 7;
     
   } else {
+    //set clock back to low
     digitalWrite(cpPin, LOW);
   }
-  
-   if (Serial.available() > 0) {
+
+
+  // Demo how to control LED grid by setting global variable "digit"
+  if (Serial.available() > 0) {
       int incomingByte = Serial.read();
       digit = incomingByte - '0';      
   }
 
 
+  
+  // read the state of the pushbutton value and set onboard LED:
+  buttonState = digitalRead(buttonPin);
+  
   if (buttonState == HIGH) {
     digitalWrite(ledPin, HIGH);
   } else {
