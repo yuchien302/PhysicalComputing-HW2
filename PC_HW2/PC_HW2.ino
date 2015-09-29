@@ -21,7 +21,7 @@ int row_idx = 0;
 int morse[5] = {0,0,0,0,0};
 int location = 0;
 int highCount = 0;
-int digit = 0;
+int digit = 11;
 
 void setup() {
   // initialize the pushbutton pin as an input:
@@ -53,12 +53,9 @@ void setup() {
   digitalWrite(dataPin, LOW);
   digitalWrite(cpPin, HIGH);
   digitalWrite(oePin, HIGH);
-
 }
 
-
-
-int digits[10][7][5] = {{{0,0,0,0,0},
+int digits[12][7][5] = {{{0,0,0,0,0},
                          {0,1,1,1,0},
                          {0,1,1,1,0},
                          {0,1,1,1,0},
@@ -136,7 +133,23 @@ int digits[10][7][5] = {{{0,0,0,0,0},
                          {0,0,0,0,0},
                          {1,1,1,1,0},
                          {1,1,1,1,0},
-                         {0,0,0,0,0}}};
+                         {0,0,0,0,0}},
+                         
+                        {{0,1,1,1,0},
+                         {0,0,1,0,0},
+                         {1,0,0,0,1},
+                         {1,1,0,1,1},
+                         {1,0,0,0,1},
+                         {0,0,1,0,0},
+                         {0,1,1,1,0}},
+                         
+                        {{1,1,1,1,1},
+                         {1,1,1,1,1},
+                         {1,1,1,1,1},
+                         {1,1,1,1,1},
+                         {1,1,1,1,1},
+                         {1,1,1,1,1},
+                         {1,1,1,1,1}},};
 
 void loop() {
 
@@ -179,6 +192,9 @@ void loop() {
       morseToDigit();
       Serial.println(digit);
       location = 0; 
+      for (int i = 0; i < 5; i++) {
+        morse[i] = 0;
+      }
   }
   else if (location < 5) {
     if (buttonState == HIGH) {
@@ -195,12 +211,33 @@ void loop() {
         morse[location++] = 1;
         Serial.println("dash");
       }
-      
+      if (!checkMorseValidity()) {
+        Serial.println("Invalid Morse Code");
+        location = 0; 
+        for (int i = 0; i < 5; i++) {
+          morse[i] = 0;
+        }
+        digit = 10;
+      }
       highCount = 0;
       // turn LED off:
       digitalWrite(ledPin, LOW);
     }
   }
+}
+
+bool checkMorseValidity() {
+  int lastMorse = location - 1;
+  if (morse[lastMorse] == morse[0]) {
+    if (lastMorse > 1) {
+      for (int i = 1; i < lastMorse; i++) {
+        if (morse[lastMorse] != morse[i]) {
+          return false;
+        }
+      }
+    }
+  }
+  return true;
 }
 
 void morseToDigit() {
