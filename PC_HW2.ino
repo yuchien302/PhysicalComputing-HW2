@@ -183,49 +183,61 @@ void loop() {
     digitalWrite(cpPin, LOW);
   }
 
-
-
   // read the state of the pushbutton value and set onboard LED:
   buttonState = digitalRead(buttonPin);
   
+  // run this once the morse code is finised
   if (location == 5) {
-      morseToDigit();
+      // convert morse code to number
+      digit = morseToNumber();
       Serial.println(digit);
+
+      // reset morse reader
       location = 0; 
       for (int i = 0; i < 5; i++) {
         morse[i] = 0;
       }
   }
   else if (location < 5) {
+    // Start counting the length of state high once button is pressed
     if (buttonState == HIGH) {
       highCount++;
-      // turn LED on:
-      digitalWrite(ledPin, HIGH);
     }
+    // button is released
     else {
+      // if it is a short burst of 'high' state, count as a dot
+      // minimum count of 10 to avout small debouncing problem
       if (highCount > 10 && highCount <= 200) {
         morse[location++] = 0;
         Serial.println("dot");
       }
+      // if it is a long burst, count as a dash
       else if (highCount > 200) {
         morse[location++] = 1;
         Serial.println("dash");
       }
+
+      // Check whether the current morse read is a valid number
       if (!checkMorseValidity()) {
         Serial.println("Invalid Morse Code");
+
+        // if it's not, reser the morse scanner
         location = 0; 
         for (int i = 0; i < 5; i++) {
           morse[i] = 0;
         }
+
+        // show an "X" on the LED
         digit = 10;
       }
+
+      // reset the high state count
       highCount = 0;
-      // turn LED off:
-      digitalWrite(ledPin, LOW);
     }
   }
 }
 
+// if there is a gap in between two dots/dashes (e.g dot-dash-dot), then the morse code cannot be valid
 bool checkMorseValidity() {
   int lastMorse = location - 1;
   if (morse[lastMorse] == morse[0]) {
@@ -240,17 +252,20 @@ bool checkMorseValidity() {
   return true;
 }
 
-void morseToDigit() {
+// transform the morse code array to the number
+int morseToNumber() {
   int total = 0;
+  int number = 0;
   for (int i = 0; i < 5; ++i) {
     total += morse[i];
   }
 
   if (morse[0] == 0) {
-    digit = 5 - total;
+    number = 5 - total;
   }
   else
   {
-    digit = (5 + total) % 10;
+    number = (5 + total) % 10;
   }
+  return number;
 }
