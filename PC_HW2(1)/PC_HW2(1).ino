@@ -38,6 +38,7 @@ const int led3 = 10;
 const int led2 = 11;
 const int led1 = 12;
 
+
 int morse[5] = {0,0,0,0,0};
 int location = 0;
 int highCount = 0;
@@ -57,7 +58,7 @@ void setup() {
 void loop() {
   // read the state of the pushbutton value:
   buttonState = digitalRead(buttonPin);
-  // Serial.println(buttonState);
+  Serial.println(buttonState);
   // check if the pushbutton is pressed.
   // if it is, the buttonState is HIGH:
   if (location == 5) {
@@ -68,25 +69,19 @@ void loop() {
     if (buttonState == HIGH) {
       highCount++;
       // turn LED on:
-      // digitalWrite(ledPin, HIGH);
+      digitalWrite(ledPin, HIGH);
     }
     else {
-      if (highCount > 5 && highCount <= 30) {
+      if (highCount > 0 && highCount <= 10) {
         morse[location++] = 0;
-        Serial.println("dot");
       }
-      else if (highCount > 30) {
+      else if (highCount > 10) {
         morse[location++] = 1;
-        Serial.println("dash");
       }
       highCount = 0;
       // turn LED off:
-      // digitalWrite(ledPin, LOW);
+      digitalWrite(ledPin, LOW);
     }
-  }
-  else {
-    digitalWrite(strobeShiftPin, HIGH);
-    
   }
 }
 
