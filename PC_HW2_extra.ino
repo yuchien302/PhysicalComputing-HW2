@@ -22,6 +22,12 @@ int morse[5] = {0,0,0,0,0};
 int location = 0;
 int highCount = 0;
 int digit = 11;
+int current_digit = 0;
+
+int morses[10] = {0,0,0,0,0,0,0,0,0,0};
+int morses_location = 0;
+int morses_iterator = 0;
+int morses_delay = 1000;
 
 void setup() {
   // initialize the pushbutton pin as an input:
@@ -186,51 +192,96 @@ void loop() {
   // read the state of the pushbutton value and set onboard LED:
   buttonState = digitalRead(buttonPin);
   
-  // run this once the morse code is finised
-  if (location == 5) {
-      // convert morse code to number
-      digit = morseToNumber();
-      Serial.println(digit);
-
-      // reset morse reader
-      location = 0; 
-      for (int i = 0; i < 5; i++) {
-        morse[i] = 0;
-      }
-  }
-  else if (location < 5) {
-    // Start counting the length of state high once button is pressed
-    if (buttonState == HIGH) {
-      highCount++;
+  // the morses array contains number of digits at morses[0] and the digits in subsequent location
+  // if the number of digits stored is already equal to morses[0], start displaying the digits
+  if ((morses_location - 1) == morses[0] && morses[0] != 0) {
+    // show each digit every morses_delay (1000) loop iteration
+    if (morses_iterator % morses_delay == 0) {
+      digit = morses[(morses_iterator/morses_delay) + 1];
+      Serial.print(digit);
+      Serial.print(" ");
+    } 
+    // remove the digit before displaying the next one for 200 iteration
+    else if (morses_iterator % morses_delay == (morses_delay - 200)) {
+      digit = 11;
     }
-    // button is released
-    else {
-      // if it is a short burst of 'high' state, count as a dot
-      // minimum count of 10 to avout small debouncing problem
-      if (highCount > 10 && highCount <= 200) {
-        morse[location++] = 0;
-      }
-      // if it is a long burst, count as a dash
-      else if (highCount > 200) {
-        morse[location++] = 1;
-      }
+    morses_iterator++;
 
-      // Check whether the current morse read is a valid number
-      if (!checkMorseValidity()) {
-        Serial.println("Invalid Morse Code");
+    // once the digits all shown, reset all counters and display nothing
+    if (morses_iterator == (morses_delay * morses[0])) {
+      digit = 11;
+      morses_location = 0; 
+      morses_iterator = 0;
+      for (int i = 0; i < 10; i++) {
+        morses[i] = 0;
+      }
+    }
+  }
+  else {
+    // run this once the morse code is finised
+    if (location == 5) {
+        // convert morse code to number
+        current_digit = morseToNumber();
+        Serial.println(current_digit);
 
-        // if it's not, reser the morse scanner
+        // check if the number of accepted digit is 0 (invalid), show X
+        if (current_digit == 0 && morses_location == 0) {
+          Serial.println("Invalid Number of Digit");
+          morses_location = 0; 
+          for (int i = 0; i < 10; i++) {
+            morses[i] = 0;
+          }
+          digit = 10;
+        }
+        // otherwise store in collection of number
+        else {
+          morses[morses_location++] = current_digit;
+        }
+  
+        // reset morse reader
         location = 0; 
         for (int i = 0; i < 5; i++) {
           morse[i] = 0;
         }
-
-        // show an "X" on the LED
-        digit = 10;
+    }
+    else if (location < 5) {
+      // Start counting the length of state high once button is pressed
+      if (buttonState == HIGH) {
+        highCount++;
       }
-
-      // reset the high state count
-      highCount = 0;
+      // button is released
+      else {
+        // if it is a short burst of 'high' state, count as a dot
+        // minimum count of 10 to avout small debouncing problem
+        if (highCount > 10 && highCount <= 200) {
+          morse[location++] = 0;
+        }
+        // if it is a long burst, count as a dash
+        else if (highCount > 200) {
+          morse[location++] = 1;
+        }
+  
+        // Check whether the current morse read is a valid number
+        if (!checkMorseValidity()) {
+          Serial.println("Invalid Morse Code");
+  
+          // if it's not, reser the morse scanner
+          location = 0; 
+          for (int i = 0; i < 5; i++) {
+            morse[i] = 0;
+          }
+          morses_location = 0; 
+          for (int i = 0; i < 10; i++) {
+            morses[i] = 0;
+          }
+  
+          // show an "X" on the LED
+          digit = 10;
+        }
+  
+        // reset the high state count
+        highCount = 0;
+      }
     }
   }
 }
